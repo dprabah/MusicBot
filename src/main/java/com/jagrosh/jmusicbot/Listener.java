@@ -62,9 +62,13 @@ public class Listener extends ListenerAdapter
             }
             catch(Exception ignore) {}
         });
-        if(bot.getConfig().useUpdateAlerts()) {
-            bot.getThreadpool().scheduleWithFixedDelay(() -> {
-                User owner = bot.getJDA().getUserById(bot.getConfig().getOwnerId());
+        if(bot.getConfig().useUpdateAlerts())
+        {
+            bot.getThreadpool().scheduleWithFixedDelay(() -> 
+            {
+                try
+                {
+                    User owner = bot.getJDA().retrieveUserById(bot.getConfig().getOwnerId()).complete();
                 if(owner!=null) {
                     String currentVersion = OtherUtil.getCurrentVersion();
                     String latestVersion = OtherUtil.getLatestVersion();
@@ -73,6 +77,7 @@ public class Listener extends ListenerAdapter
                         owner.openPrivateChannel().queue(pc -> pc.sendMessage(msg).queue());
                     }
                 }
+                catch(Exception ex) {} // ignored
             }, 0, 24, TimeUnit.HOURS);
         }
     }
