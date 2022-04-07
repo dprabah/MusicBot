@@ -17,8 +17,6 @@ package com.jagrosh.jmusicbot;
 
 import com.jagrosh.jmusicbot.utils.OtherUtil;
 import java.util.concurrent.TimeUnit;
-
-import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
@@ -37,7 +35,6 @@ import org.slf4j.LoggerFactory;
  *
  * @author John Grosh (john.a.grosh@gmail.com)
  */
-@Slf4j
 public class Listener extends ListenerAdapter
 {
     private final Bot bot;
@@ -48,15 +45,23 @@ public class Listener extends ListenerAdapter
     }
     
     @Override
-    public void onReady(ReadyEvent event) {
-        log.info("Use the following link to add the bot to your guilds!");
-        log.info(event.getJDA().getInviteUrl(JMusicBot.RECOMMENDED_PERMS));
+    public void onReady(ReadyEvent event) 
+    {
+        if(event.getJDA().getGuildCache().isEmpty())
+        {
+            Logger log = LoggerFactory.getLogger("MusicBot");
+            log.warn("This bot is not on any guilds! Use the following link to add the bot to your guilds!");
+            log.warn(event.getJDA().getInviteUrl(JMusicBot.RECOMMENDED_PERMS));
+        }
         credit(event.getJDA());
-        event.getJDA().getGuilds().forEach((guild) -> {
-            try {
+        event.getJDA().getGuilds().forEach((guild) -> 
+        {
+            try
+            {
                 String defpl = bot.getSettingsManager().getSettings(guild).getDefaultPlaylist();
                 VoiceChannel vc = bot.getSettingsManager().getSettings(guild).getVoiceChannel(guild);
-                if(defpl!=null && vc!=null && bot.getPlayerManager().setUpHandler(guild).playFromDefault()) {
+                if(defpl!=null && vc!=null && bot.getPlayerManager().setUpHandler(guild).playFromDefault())
+                {
                     guild.getAudioManager().openAudioConnection(vc);
                 }
             }
@@ -69,10 +74,10 @@ public class Listener extends ListenerAdapter
                 try
                 {
                     User owner = bot.getJDA().retrieveUserById(bot.getConfig().getOwnerId()).complete();
-                if(owner!=null) {
                     String currentVersion = OtherUtil.getCurrentVersion();
                     String latestVersion = OtherUtil.getLatestVersion();
-                    if(latestVersion!=null && !currentVersion.equalsIgnoreCase(latestVersion)) {
+                    if(latestVersion!=null && !currentVersion.equalsIgnoreCase(latestVersion))
+                    {
                         String msg = String.format(OtherUtil.NEW_VERSION_AVAILABLE, currentVersion, latestVersion);
                         owner.openPrivateChannel().queue(pc -> pc.sendMessage(msg).queue());
                     }
@@ -83,12 +88,14 @@ public class Listener extends ListenerAdapter
     }
     
     @Override
-    public void onGuildMessageDelete(GuildMessageDeleteEvent event) {
+    public void onGuildMessageDelete(GuildMessageDeleteEvent event) 
+    {
         bot.getNowplayingHandler().onMessageDelete(event.getGuild(), event.getMessageIdLong());
     }
 
     @Override
-    public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {
+    public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event)
+    {
         bot.getAloneInVoiceHandler().onVoiceUpdate(event);
     }
 
@@ -105,7 +112,8 @@ public class Listener extends ListenerAdapter
     }
     
     // make sure people aren't adding clones to dbots
-    private void credit(JDA jda) {
+    private void credit(JDA jda)
+    {
         Guild dbots = jda.getGuildById(110373943822540800L);
         if(dbots==null)
             return;
